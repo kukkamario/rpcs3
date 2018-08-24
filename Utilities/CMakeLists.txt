@@ -38,17 +38,17 @@ target_link_libraries(rpcs3_utilities PUBLIC rpcs3_core_utilities pugixml 3rdpar
 target_link_libraries(rpcs3_utilities PRIVATE rpcs3_crypto yaml-cpp 3rdparty::zlib)
 
 
-
-
 add_library(rpcs3_utilities_jit JIT.cpp)
-target_link_libraries(rpcs3_utilities_jit PUBLIC 3rdparty::llvm 3rdparty::asmjit)
+
+target_link_libraries(rpcs3_utilities_jit
+	PUBLIC
+		3rdparty::llvm 3rdparty::asmjit
+		3rdparty::zlib)
 
 # required for "restore_new.h"
 target_include_directories(rpcs3_utilities_jit
   PRIVATE
-    "../rpcs3" ${ZLIB_INCLUDE_DIR}
-  PUBLIC
-    ${LLVM_INCLUDE_DIRS})
+		"../rpcs3")
 
 if(NOT MSVC)
   set_source_files_properties(JIT.cpp PROPERTIES COMPILE_FLAGS -fno-rtti)

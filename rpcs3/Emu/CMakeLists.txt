@@ -15,5 +15,5 @@ target_link_libraries(rpcs3_emu
 		rpcs3_utilities_jit
 	PRIVATE
 		rpcs3_stdafx
-		3rdparty::zlib yaml-cpp
+		3rdparty::zlib 3rdparty::yaml-cpp
 )
