@@ -93,7 +93,7 @@ endif()
 
 # To make UI files on cmake 3.7 or less work
 if(CMAKE_VERSION VERSION_LESS 3.8)
-  set(CMAKE_INCLUDE_CURRENT_DIR ON)
+	set(CMAKE_INCLUDE_CURRENT_DIR ON)
 endif()
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -160,10 +160,10 @@ set_target_properties(rpcs3 PROPERTIES COTIRE_CXX_PREFIX_HEADER_INIT "${RPCS3_SR
 cotire(rpcs3)
 
 if (UNIX)
-  # Copy icons to executable directory
-  add_custom_command(	TARGET rpcs3 POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/bin/Icons $<TARGET_FILE_DIR:rpcs3>/Icons)
+	# Copy icons to executable directory
+	add_custom_command(TARGET rpcs3 POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_directory
+			${CMAKE_SOURCE_DIR}/bin/Icons $<TARGET_FILE_DIR:rpcs3>/Icons)
 endif()
 
 # Unix installation

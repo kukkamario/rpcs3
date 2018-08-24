@@ -33,7 +33,7 @@ endif()
 
 if(WIN32)
 	add_definitions(-DUNICODE)
-  add_definitions(-D_WIN32_WINNT=0x0602)
+	add_definitions(-D_WIN32_WINNT=0x0602)
 endif()
 
 add_subdirectory(Vulkan EXCLUDE_FROM_ALL)

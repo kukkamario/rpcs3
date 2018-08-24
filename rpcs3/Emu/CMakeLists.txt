@@ -11,9 +11,9 @@ add_library(rpcs3_emu ${SRC_FILES})
 
 target_link_libraries(rpcs3_emu
 	PUBLIC
-	  rpcs3_audio rpcs3_cell rpcs3_cpu rpcs3_io rpcs3_memory rpcs3_rsx
+		rpcs3_audio rpcs3_cell rpcs3_cpu rpcs3_io rpcs3_memory rpcs3_rsx
 		rpcs3_utilities_jit
 	PRIVATE
-	  rpcs3_stdafx
+		rpcs3_stdafx
 		3rdparty::zlib yaml-cpp
 )
