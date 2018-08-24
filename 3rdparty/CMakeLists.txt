@@ -1,0 +1,291 @@
+find_package(PkgConfig)
+
+if(APPLE)
+	set(PLATFORM_ARCH "macosx/x86_64")
+elseif(WIN32)
+	set(PLATFORM_ARCH "Windows/x86_64")
+else()
+	set(PLATFORM_ARCH "linux/x86_64")
+endif()
+
+# Dummy target to use when lib isn't available
+add_library(3rdparty_dummy_lib INTERFACE)
+
+# ZLib
+find_package(ZLIB QUIET)
+if (NOT ZLIB_FOUND)
+	add_subdirectory(3rdparty/zlib EXCLUDE_FROM_ALL)
+	set(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/zlib" "${CMAKE_CURRENT_BINARY_DIR}/zlib")
+	set(ZLIB_LIBRARY zlibstatic)
+endif()
+
+add_library(3rdparty_zlib INTERFACE)
+target_link_libraries(3rdparty_zlib INTERFACE ${ZLIB_LIBRARY})
+target_include_directories(3rdparty_zlib INTERFACE ${ZLIB_INCLUDE_DIR})
+
+# libPNG
+# Select the version of libpng to use, default is builtin
+if (NOT USE_SYSTEM_LIBPNG)
+	# We use libpng's static library and don't need to build the shared library and run the tests
+	set(PNG_SHARED OFF CACHE BOOL "Build shared lib" FORCE)
+	set(PNG_TESTS OFF CACHE BOOL "Build libpng tests" FORCE)
+	set(SKIP_INSTALL_ALL ON)
+	add_subdirectory(libpng EXCLUDE_FROM_ALL)
+
+	set(LIBPNG_TARGET png_static)
+else()
+	find_package(PNG REQUIRED)
+
+	add_library(3rdparty_system_libpng INTERFACE)
+	target_include_directories(3rdparty_system_libpng INTERFACE ${PNG_INCLUDE_DIR})
+	target_link_libraries(3rdparty_system_libpng INTERFACE ${PNG_LIBRARY})
+	target_compile_definitions(3rdparty_system_libpng INTERFACE ${PNG_DEFINITIONS})
+
+	set(LIBPNG_TARGET 3rdparty_system_libpng)
+endif()
+
+
+# pugixml
+add_subdirectory(pugixml EXCLUDE_FROM_ALL)
+
+
+# hidapi
+add_library(3rdparty_hidapi INTERFACE)
+target_include_directories(3rdparty_hidapi INTERFACE hidapi/hidapi)
+
+if(APPLE)
+	add_subdirectory(hidapi/mac EXCLUDE_FROM_ALL)
+	target_include_directories(hidapi-mac PUBLIC hidapi/hidapi)
+
+	target_link_libraries(3rdparty_hidapi INTERFACE hidapi-mac "-framework CoreFoundation" "-framework IOKit")
+elseif(CMAKE_SYSTEM MATCHES "Linux")
+	add_subdirectory(hidapi/linux EXCLUDE_FROM_ALL)
+	target_include_directories(hidapi-hidraw PUBLIC hidapi/hidapi)
+
+	target_link_libraries(3rdparty_hidapi INTERFACE hidapi-hidraw udev)
+elseif(MSVC)
+	add_subdirectory(hidapi/windows EXCLUDE_FROM_ALL)
+	target_include_directories(hidapi-hid PUBLIC hidapi/hidapi)
+
+	target_link_libraries(3rdparty_hidapi INTERFACE hidapi-hid Shlwapi.lib)
+else()
+	add_subdirectory(hidapi/libusb EXCLUDE_FROM_ALL)
+	target_link_libraries(3rdparty_hidapi INTERFACE hidapi-libusb usb)
+endif()
+
+
+# yaml-cpp
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "Enable testing" FORCE)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Enable parse tools" FORCE)
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "Enable contrib stuff in library" FORCE)
+add_subdirectory(yaml-cpp EXCLUDE_FROM_ALL)
+
+
+# xxHash
+set(XXHASH_BUNDLED_MODE ON)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Make xxHash build static libs")
+add_subdirectory(xxHash/cmake_unofficial)
+target_include_directories(xxhash INTERFACE xxHash)
+
+
+# cereal
+add_library(3rdparty_cereal INTERFACE)
+target_include_directories(3rdparty_cereal INTERFACE cereal/include)
+
+
+# OpenGL
+
+# Prefer GLVND for OpenGL rather than legacy
+set(OpenGL_GL_PREFERENCE GLVND)
+find_package(OpenGL REQUIRED)
+
+add_library(3rdparty_opengl INTERFACE)
+target_include_directories(3rdparty_opengl INTERFACE GL)
+
+if (WIN32)
+	if(NOT MSVC)
+		target_link_libraries(3rdparty_opengl INTERFACE ${OPENGL_LIBRARIES} opengl32.lib glu32.lib)
+	else()
+		target_link_libraries(3rdparty_opengl INTERFACE dxgi.lib d2d1.lib dwrite.lib)
+	endif()
+else()
+	target_link_libraries(3rdparty_opengl INTERFACE ${OPENGL_LIBRARIES})
+
+	target_compile_definitions(3rdparty_opengl
+		INTERFACE
+			-DGL_GLEXT_PROTOTYPES
+			-DGLX_GLXEXT_PROTOTYPES)
+endif()
+
+
+# GSL
+add_library(3rdparty_gsl INTERFACE)
+target_include_directories(3rdparty_gsl INTERFACE GSL/include)
+
+
+# Optional
+add_library(3rdparty_optional INTERFACE)
+target_include_directories(3rdparty_optional INTERFACE Optional)
+
+
+# stblib
+add_library(3rdparty_stblib INTERFACE)
+target_include_directories(3rdparty_stblib INTERFACE stblib)
+
+
+# discord_rpc
+add_library(3rdparty_discord-rpc INTERFACE)
+
+# We don't want Discord Rich Presence on the BSDs and other OSes
+if (WIN32 OR CMAKE_SYSTEM MATCHES "Linux" OR APPLE)
+	target_include_directories(3rdparty_discord-rpc INTERFACE discord-rpc/include)
+	target_compile_definitions(3rdparty_discord-rpc INTERFACE -DWITH_DISCORD_RPC)
+
+	set(DISCORD_RPC_LIB NOTFOUND)
+	if (WIN32)
+		find_library(DISCORD_RPC_LIB discord-rpc PATHS discord-rpc/lib/ NO_DEFAULT_PATH)
+	elseif(CMAKE_SYSTEM MATCHES "Linux")
+		find_library(DISCORD_RPC_LIB discord-rpc-linux PATHS discord-rpc/lib/ NO_DEFAULT_PATH)
+	elseif(APPLE)
+		find_library(DISCORD_RPC_LIB discord-rpc-mac PATHS discord-rpc/lib/ NO_DEFAULT_PATH)
+	endif()
+	target_link_libraries(3rdparty_discord-rpc INTERFACE ${DISCORD_RPC_LIB})
+endif()
+
+
+# ALSA
+set(ALSA_TARGET 3rdparty_dummy_lib)
+
+if(USE_ALSA)
+	find_package(ALSA)
+	if(ALSA_FOUND)
+		add_library(3rdparty_alsa INTERFACE)
+		target_compile_definitions(3rdparty_alsa INTERFACE -DHAVE_ALSA)
+		target_include_directories(3rdparty_alsa SYSTEM INTERFACE ${ALSA_INCLUDE_DIRS})
+		target_link_libraries(3rdparty_alsa INTERFACE ${ALSA_LIBRARIES})
+
+		set(ALSA_TARGET 3rdparty_alsa)
+	endif()
+endif()
+
+
+# Pulse
+set(PULSE_TARGET 3rdparty_dummy_lib)
+if(USE_PULSE)
+	pkg_check_modules(PULSE libpulse-simple)
+
+	if(PULSE_FOUND)
+		add_library(3rdparty_pulse INTERFACE)
+		target_compile_definitions(3rdparty_pulse INTERFACE -DHAVE_PULSE)
+		target_include_directories(3rdparty_pulse SYSTEM
+			INTERFACE ${PULSE_INCLUDE_DIRS})
+		target_link_libraries(3rdparty_pulse INTERFACE ${PULSE_LDFLAGS})
+
+		set(PULSE_TARGET 3rdparty_pulse)
+	endif()
+endif()
+
+# libevdev
+set(LIBEVDEV_TARGET 3rdparty_dummy_lib)
+if(USE_LIBEVDEV)
+	pkg_check_modules(LIBEVDEV libevdev)
+	if(LIBEVDEV_FOUND)
+		add_library(3rdparty_libevdev INTERFACE)
+		target_compile_definitions(3rdparty_libevdev INTERFACE -DHAVE_LIBEVDEV)
+		target_include_directories(3rdparty_libevdev SYSTEM
+			INTERFACE ${LIBEVDEV_INCLUDE_DIRS})
+		target_link_libraries(3rdparty_libevdev INTERFACE ${LIBEVDEV_LDFLAGS})
+
+		set(LIBEVDEV_TARGET 3rdparty_libevdev)
+	endif()
+endif()
+
+
+# Vulkan
+set(VULKAN_TARGET 3rdparty_dummy_lib)
+if(NOT APPLE AND USE_VULKAN)
+	find_package(Vulkan)
+	if(VULKAN_FOUND)
+		add_library(3rdparty_vulkan INTERFACE)
+		target_compile_definitions(3rdparty_vulkan INTERFACE -DHAVE_VULKAN)
+		target_link_libraries(3rdparty_vulkan INTERFACE SPIRV Vulkan::Vulkan)
+
+		if(UNIX AND NOT APPLE)
+			find_package(Wayland)
+			if (WAYLAND_FOUND)
+				target_include_directories(3rdparty_vulkan
+					INTERFACE ${WAYLAND_INCLUDE_DIR})
+
+				target_compile_definitions(3rdparty_vulkan
+					INTERFACE -DVK_USE_PLATFORM_WAYLAND_KHR)
+			endif()
+		endif()
+
+		set(VULKAN_TARGET 3rdparty_vulkan)
+	else()
+		message("WARNING! USE_VULKAN was enabled, but libvulkan was not found. RPCS3 will be compiled without Vulkan support.")
+	endif()
+endif()
+
+
+# OpenAL
+find_package(OpenAL REQUIRED)
+
+add_library(3rdparty_openal INTERFACE)
+target_include_directories(3rdparty_openal INTERFACE ${OPENAL_INCLUDE_DIR})
+target_link_libraries(3rdparty_openal INTERFACE ${OPENAL_LIBRARY})
+
+
+# FFMPEG
+add_library(3rdparty_ffmpeg INTERFACE)
+
+# Select the version of ffmpeg to use, default is builtin
+if(USE_SYSTEM_FFMPEG)
+	message("-- RPCS3: using shared ffmpeg")
+	find_package(FFMPEG REQUIRED)
+
+	target_include_directories(3rdparty_ffmpeg INTERFACE ${FFMPEG_INCLUDE_DIR})
+	target_link_libraries(3rdparty_ffmpeg INTERFACE ${FFMPEG_LIBRARIES})
+else()
+	message("-- RPCS3: using builtin ffmpeg")
+	target_include_directories(3rdparty_ffmpeg INTERFACE "ffmpeg/${PLATFORM_ARCH}/include")
+
+	set(FFMPEG_LIB_DIR "ffmpeg/${PLATFORM_ARCH}/lib")
+	find_library(FFMPEG_LIB_AVFORMAT avformat PATHS ${FFMPEG_LIB_DIR} NO_DEFAULT_PATH)
+	find_library(FFMPEG_LIB_AVCODEC avcodec PATHS ${FFMPEG_LIB_DIR} NO_DEFAULT_PATH)
+	find_library(FFMPEG_LIB_AVUTIL avutil PATHS ${FFMPEG_LIB_DIR} NO_DEFAULT_PATH)
+	find_library(FFMPEG_LIB_SWSCALE swscale PATHS ${FFMPEG_LIB_DIR} NO_DEFAULT_PATH)
+	target_link_libraries(3rdparty_ffmpeg
+		INTERFACE
+			${FFMPEG_LIB_AVFORMAT}
+			${FFMPEG_LIB_AVCODEC}
+			${FFMPEG_LIB_AVUTIL}
+			${FFMPEG_LIB_SWSCALE})
+endif()
+
+# dx12
+add_library(3rdparty_dx12 INTERFACE)
+if (WIN32)
+	target_link_libraries(3rdparty_dx12 INTERFACE dxgi.lib d2d1.lib dwrite.lib)
+endif()
+
+# add nice ALIAS targets for ease of use
+add_library(3rdparty::zlib ALIAS 3rdparty_zlib)
+add_library(3rdparty::pugixml ALIAS pugixml)
+add_library(3rdparty::yaml-cpp ALIAS yaml-cpp)
+add_library(3rdparty::xxhash ALIAS xxhash)
+add_library(3rdparty::hidapi ALIAS 3rdparty_hidapi)
+add_library(3rdparty::libpng ALIAS ${LIBPNG_TARGET})
+add_library(3rdparty::cereal ALIAS 3rdparty_cereal)
+add_library(3rdparty::opengl ALIAS 3rdparty_opengl)
+add_library(3rdparty::gsl ALIAS 3rdparty_gsl)
+add_library(3rdparty::optional ALIAS 3rdparty_optional)
+add_library(3rdparty::stblib ALIAS 3rdparty_stblib)
+add_library(3rdparty::discord-rpc ALIAS 3rdparty_discord-rpc)
+add_library(3rdparty::alsa ALIAS ${ALSA_TARGET})
+add_library(3rdparty::pulse ALIAS ${PULSE_TARGET})
+add_library(3rdparty::libevdev ALIAS ${LIBEVDEV_TARGET})
+add_library(3rdparty::vulkan ALIAS ${VULKAN_TARGET})
+add_library(3rdparty::openal ALIAS 3rdparty_openal)
+add_library(3rdparty::ffmpeg ALIAS 3rdparty_ffmpeg)
+add_library(3rdparty::dx12 ALIAS 3rdparty_dx12)
