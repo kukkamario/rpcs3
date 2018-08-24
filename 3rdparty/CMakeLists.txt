@@ -84,7 +84,7 @@ add_subdirectory(yaml-cpp EXCLUDE_FROM_ALL)
 # xxHash
 set(XXHASH_BUNDLED_MODE ON)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Make xxHash build static libs")
-add_subdirectory(xxHash/cmake_unofficial)
+add_subdirectory(xxHash/cmake_unofficial EXCLUDE_FROM_ALL)
 target_include_directories(xxhash INTERFACE xxHash)
 
 
