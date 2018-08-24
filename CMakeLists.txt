@@ -12,6 +12,8 @@ option(USE_LIBEVDEV "libevdev-based joystick support" ON)
 
 option(USE_VULKAN "Vulkan render backend" ON)
 
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/rpcs3/cmake_modules")
+
 if (WITH_GDB)
 	add_definitions(-DWITH_GDB_DEBUGGER)
 endif()
