@@ -75,10 +75,18 @@ endif()
 
 
 # yaml-cpp
+# We don't want to install yaml-cpp but its cmake file doesn't have option
+# to disable it...
+# So we just install it to a different directory
+set(CMAKE_INSTALL_PREFIX_OLD ${CMAKE_INSTALL_PREFIX})
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/yaml-cpp_install)
+
 set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "Enable testing" FORCE)
 set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Enable parse tools" FORCE)
 set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "Enable contrib stuff in library" FORCE)
 add_subdirectory(yaml-cpp EXCLUDE_FROM_ALL)
+
+set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX_OLD})
 
 
 # xxHash
@@ -229,7 +237,12 @@ endif()
 
 
 # OpenAL
-find_package(OpenAL REQUIRED)
+if (MSVC)
+	find_path(OPENAL_INCLUDE_DIR al.h PATHS OpenAL/include)
+	find_library(OPENAL_LIBRARY OpenAL32 PATHS OpenAL/libs/Win64/)
+else()
+	find_package(OpenAL REQUIRED)
+endif()
 
 add_library(3rdparty_openal INTERFACE)
 target_include_directories(3rdparty_openal INTERFACE ${OPENAL_INCLUDE_DIR})

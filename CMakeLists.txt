@@ -14,6 +14,9 @@ option(USE_VULKAN "Vulkan render backend" ON)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/rpcs3/cmake_modules")
 
+set(CMAKE_CXX_STANDARD 17)
+include(CheckCXXCompilerFlag)
+
 if (WITH_GDB)
 	add_definitions(-DWITH_GDB_DEBUGGER)
 endif()
@@ -58,10 +61,19 @@ if(NOT WITHOUT_LLVM)
 		option(LLVM_INCLUDE_TOOLS OFF)
 		option(LLVM_INCLUDE_UTILS OFF)
 		option(WITH_POLLY OFF)
+		option(LLVM_ENABLE_CXX1Z TRUE)
+
+		set(CXX_FLAGS_OLD ${CMAKE_CXX_FLAGS})
+
+		if (MSVC)
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /D _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS")
+		endif()
 
 		# LLVM needs to be built out-of-tree
 		add_subdirectory(llvm llvm_build EXCLUDE_FROM_ALL)
 		set(LLVM_DIR "${CMAKE_CURRENT_BINARY_DIR}/llvm_build/lib/cmake/llvm/")
+
+		set(CMAKE_CXX_FLAGS ${CXX_FLAGS_OLD})
 
 		# now tries to find LLVM again
 		find_package(LLVM 7.0 CONFIG)
