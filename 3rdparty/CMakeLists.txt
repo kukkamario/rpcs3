@@ -33,6 +33,8 @@ if (NOT USE_SYSTEM_LIBPNG)
 	add_subdirectory(libpng EXCLUDE_FROM_ALL)
 
 	set(LIBPNG_TARGET png_static)
+
+	target_include_directories(png_static INTERFACE "${libpng_BINARY_DIR}" "${libpng_SOURCE_DIR}")
 else()
 	find_package(PNG REQUIRED)
 
