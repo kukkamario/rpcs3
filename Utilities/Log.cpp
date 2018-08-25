@@ -1,4 +1,4 @@
-﻿#include "Log.h"
+#include "Log.h"
 #include "File.h"
 #include "StrFmt.h"
 #include "sema.h"
@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <thread>
 #include <chrono>
+#include <cstring>
 
 using namespace std::literals::chrono_literals;
 
