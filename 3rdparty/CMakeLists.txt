@@ -14,6 +14,7 @@ add_library(3rdparty_dummy_lib INTERFACE)
 # ZLib
 find_package(ZLIB QUIET)
 if (NOT ZLIB_FOUND)
+	set(SKIP_INSTALL_ALL ON)
 	add_subdirectory(3rdparty/zlib EXCLUDE_FROM_ALL)
 	set(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/zlib" "${CMAKE_CURRENT_BINARY_DIR}/zlib")
 	set(ZLIB_LIBRARY zlibstatic)
@@ -29,6 +30,7 @@ if (NOT USE_SYSTEM_LIBPNG)
 	# We use libpng's static library and don't need to build the shared library and run the tests
 	set(PNG_SHARED OFF CACHE BOOL "Build shared lib" FORCE)
 	set(PNG_TESTS OFF CACHE BOOL "Build libpng tests" FORCE)
+	set(PNG_BUILD_ZLIB ON CACHE BOOL "ZLIB is already build or package is found" FORCE)
 	set(SKIP_INSTALL_ALL ON)
 	add_subdirectory(libpng EXCLUDE_FROM_ALL)
 
@@ -278,12 +280,15 @@ else()
 			${FFMPEG_LIB_SWSCALE})
 endif()
 
+
 # dx12
 add_library(3rdparty_dx12 INTERFACE)
 if (WIN32)
 	target_link_libraries(3rdparty_dx12 INTERFACE dxgi.lib d2d1.lib dwrite.lib)
 endif()
 
+
+# GLEW
 add_library(3rdparty_glew INTERFACE)
 if(NOT MSVC)
 	find_package(GLEW 1.13.0 REQUIRED)
@@ -293,6 +298,7 @@ if(NOT MSVC)
 	find_package(Threads REQUIRED)
 	target_link_libraries(3rdparty_glew INTERFACE Threads::Threads)
 endif()
+
 
 # add nice ALIAS targets for ease of use
 add_library(3rdparty::zlib ALIAS 3rdparty_zlib)
