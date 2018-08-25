@@ -134,11 +134,6 @@ else()
 	target_link_libraries(rpcs3 ${CMAKE_DL_LIBS})
 endif()
 
-# For some reason GCC 7 requires manually linking with -latomic
-if(CMAKE_COMPILER_IS_GNUCXX AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7))
-	target_link_libraries(rpcs3 -latomic)
-endif()
-
 target_link_libraries(rpcs3
 	${RPCS3_QT_LIBS}
 	3rdparty::hidapi
