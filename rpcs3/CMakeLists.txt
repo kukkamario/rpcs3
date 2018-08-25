@@ -120,6 +120,7 @@ add_dependencies(rpcs3 GitVersion)
 
 target_link_libraries(rpcs3 ${ADDITIONAL_LIBS})
 target_link_libraries(rpcs3 rpcs3_emu rpcs3_ui rpcs3_loader rpcs3_crypto rpcs3_utilities)
+target_link_libraries(rpcs3 3rdparty::discord-rpc)
 
 if(UNIX)
 	find_package(X11 REQUIRED)

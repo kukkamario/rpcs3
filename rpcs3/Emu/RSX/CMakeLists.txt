@@ -1,6 +1,6 @@
 file(GLOB SRC_FILES "*.cpp" "Common/*.cpp" "Null/*.cpp" "Overlays/*.cpp" "Capture/*.cpp" "GL/*.cpp")
 
-if(WIN32 OR VULKAN_FOUND)
+if(TARGET 3rdparty_vulkan)
 	file(GLOB VULKAN_SRCS "VK/*.cpp")
 	list(APPEND SRC_FILES ${VULKAN_SRCS})
 endif()
