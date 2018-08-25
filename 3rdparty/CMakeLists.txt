@@ -11,11 +11,18 @@ endif()
 # Dummy target to use when lib isn't available
 add_library(3rdparty_dummy_lib INTERFACE)
 
+
 # ZLib
-find_package(ZLIB QUIET)
+option(USE_SYSTEM_ZLIB "Prefer system ZLIB instead of the builtin one" ON)
+
+if (USE_SYSTEM_ZLIB)
+	find_package(ZLIB QUIET)
+endif()
+
 if (NOT ZLIB_FOUND)
+	message(STATUS "Using builtin ZLIB")
 	set(SKIP_INSTALL_ALL ON)
-	add_subdirectory(3rdparty/zlib EXCLUDE_FROM_ALL)
+	add_subdirectory(zlib EXCLUDE_FROM_ALL)
 	set(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/zlib" "${CMAKE_CURRENT_BINARY_DIR}/zlib")
 	set(ZLIB_LIBRARY zlibstatic)
 endif()
