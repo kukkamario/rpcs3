@@ -50,7 +50,7 @@ using draw_context_t = void*;
 #ifdef _WIN32
 	using display_handle_t = HWND;
 #else
-	using display_handle_t = std::variant<
+	using display_handle_t = utils::variant<
 		std::pair<Display*, Window>
 #ifdef VK_USE_PLATFORM_WAYLAND_KHR
 		, std::pair<wl_display*, wl_surface*>

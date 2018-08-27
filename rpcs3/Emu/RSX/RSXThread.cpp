@@ -1273,10 +1273,10 @@ namespace rsx
 		return {ptr + first * vertex_array_info.stride(), count * vertex_array_info.stride() + element_size};
 	}
 
-	std::vector<std::variant<vertex_array_buffer, vertex_array_register, empty_vertex_array>>
+	std::vector<utils::variant<vertex_array_buffer, vertex_array_register, empty_vertex_array>>
 	thread::get_vertex_buffers(const rsx::rsx_state& state, const std::vector<std::pair<u32, u32>>& vertex_ranges, const u64 consumed_attrib_mask) const
 	{
-		std::vector<std::variant<vertex_array_buffer, vertex_array_register, empty_vertex_array>> result;
+		std::vector<utils::variant<vertex_array_buffer, vertex_array_register, empty_vertex_array>> result;
 		result.reserve(rsx::limits::vertex_count);
 
 		u32 input_mask = state.vertex_attrib_input_mask();
@@ -1319,7 +1319,7 @@ namespace rsx
 		return result;
 	}
 
-	std::variant<draw_array_command, draw_indexed_array_command, draw_inlined_array>
+	utils::variant<draw_array_command, draw_indexed_array_command, draw_inlined_array>
 	thread::get_draw_command(const rsx::rsx_state& state) const
 	{
 		if (rsx::method_registers.current_draw_clause.command == rsx::draw_command::array) {

@@ -5,7 +5,7 @@
 
 //namespace mapbox {
 //namespace util {
-namespace std {
+namespace utils {
 
 template <typename... Fns>
 struct visitor;

@@ -249,7 +249,7 @@ namespace
 		return std::make_tuple(index_buffer_view, index_count);
 	}
 
-	using attribute_storage = std::vector<std::variant<rsx::vertex_array_buffer,
+	using attribute_storage = std::vector<utils::variant<rsx::vertex_array_buffer,
 		rsx::vertex_array_register, rsx::empty_vertex_array>>;
 
 	/**
@@ -274,7 +274,7 @@ namespace
 			vertex_count, command_list, m_vertex_buffer_data, m_buffer_data);
 		const auto& vertex_buffers = get_vertex_buffers(rsx::method_registers, vertex_ranges);
 
-		for (const auto& vbo : vertex_buffers) std::apply_visitor(visitor, vbo);
+		for (const auto& vbo : vertex_buffers) utils::apply_visitor(visitor, vbo);
 
 		command_list->ResourceBarrier(1,
 			&CD3DX12_RESOURCE_BARRIER::Transition(m_vertex_buffer_data,
@@ -464,7 +464,7 @@ namespace
 std::tuple<bool, size_t, std::vector<D3D12_SHADER_RESOURCE_VIEW_DESC>>
 D3D12GSRender::upload_and_set_vertex_index_data(ID3D12GraphicsCommandList* command_list)
 {
-	return std::apply_visitor(
+	return utils::apply_visitor(
 		draw_command_visitor(command_list, m_buffer_data, m_vertex_buffer_data.Get(),
 			[this](
 				const auto& state, const auto& list) { return get_vertex_buffers(state, list, 0); }),

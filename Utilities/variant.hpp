@@ -58,7 +58,7 @@
 
 //namespace mapbox {
 //	namespace util {
-namespace std {
+namespace utils {
 
 		// XXX This should derive from std::logic_error instead of std::runtime_error.
 		//     See https://github.com/mapbox/variant/issues/48 for details.
@@ -854,16 +854,16 @@ namespace std {
 			// unary
 			template <typename... Fs>
 			auto VARIANT_INLINE match(Fs&&... fs) const
-			-> decltype(variant::visit(*this, ::std::make_visitor(std::forward<Fs>(fs)...)))
+			-> decltype(variant::visit(*this, ::utils::make_visitor(std::forward<Fs>(fs)...)))
 			{
-				return variant::visit(*this, ::std::make_visitor(std::forward<Fs>(fs)...));
+				return variant::visit(*this, ::utils::make_visitor(std::forward<Fs>(fs)...));
 			}
 			// non-const
 			template <typename... Fs>
 			auto VARIANT_INLINE match(Fs&&... fs)
-			-> decltype(variant::visit(*this, ::std::make_visitor(std::forward<Fs>(fs)...)))
+			-> decltype(variant::visit(*this, ::utils::make_visitor(std::forward<Fs>(fs)...)))
 			{
-				return variant::visit(*this, ::std::make_visitor(std::forward<Fs>(fs)...));
+				return variant::visit(*this, ::utils::make_visitor(std::forward<Fs>(fs)...));
 			}
 
 			~variant() noexcept // no-throw destructor

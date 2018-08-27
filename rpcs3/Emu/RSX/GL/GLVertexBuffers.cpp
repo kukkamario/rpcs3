@@ -83,7 +83,7 @@ namespace
 	struct draw_command_visitor
 	{
 		using attribute_storage = std::vector<
-		    std::variant<rsx::vertex_array_buffer, rsx::vertex_array_register, rsx::empty_vertex_array>>;
+				utils::variant<rsx::vertex_array_buffer, rsx::vertex_array_register, rsx::empty_vertex_array>>;
 
 		draw_command_visitor(gl::ring_buffer& index_ring_buffer, rsx::vertex_input_layout& vertex_layout)
 		    : m_index_ring_buffer(index_ring_buffer)
@@ -187,7 +187,7 @@ gl::vertex_upload_info GLGSRender::set_vertex_buffer()
 	m_vertex_layout = analyse_inputs_interleaved();
 
 	//Write index buffers and count verts
-	auto result = std::apply_visitor(draw_command_visitor(*m_index_ring_buffer, m_vertex_layout), get_draw_command(rsx::method_registers));
+	auto result = utils::apply_visitor(draw_command_visitor(*m_index_ring_buffer, m_vertex_layout), get_draw_command(rsx::method_registers));
 
 	auto &vertex_count = result.allocated_vertex_count;
 	auto &vertex_base = result.vertex_data_base;

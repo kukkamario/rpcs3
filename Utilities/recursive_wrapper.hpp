@@ -17,7 +17,7 @@
 
 //namespace mapbox {
 //namespace util {
-namespace std {
+namespace utils {
 
 template <typename T>
 class recursive_wrapper
